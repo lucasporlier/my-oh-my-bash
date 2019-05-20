@@ -1,3 +1,11 @@
+# *Disclaimer*
+
+This repository is a fork, where I trimmed and removed quite a lot of the original functionnalities and work of *oh-my-bash*.
+If you want the original experience described in this README and the comments in the code, head over to [the original repository](https://github.com/ohmybash/oh-my-bash).
+✌️
+
+---
+
 Oh My Bash is an open source, community-driven framework for managing your [bash](https://www.gnu.org/software/bash/) configuration.
 
 Sounds boring. Let's try again.
