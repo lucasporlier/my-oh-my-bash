@@ -1,18 +1,5 @@
 #!/usr/bin/env bash
 
-# Bail out early if non-interactive
-case $- in
-  *i*) ;;
-    *) return;;
-esac
-
-# Check for updates on initial load...
-if [ "$DISABLE_AUTO_UPDATE" != "true" ]; then
-  env OSH=$OSH DISABLE_UPDATE_PROMPT=$DISABLE_UPDATE_PROMPT bash -f $OSH/tools/check_for_upgrade.sh
-fi
-
-# Initializes Oh My Bash
-
 # add a function path
 fpath=($OSH/functions $fpath)
 
@@ -36,7 +23,6 @@ for config_file in $OSH/lib/*.sh; do
   source $config_file
 done
 
-
 is_plugin() {
   local base_dir=$1
   local name=$2
@@ -58,6 +44,7 @@ is_completion() {
   local name=$2
   test -f $base_dir/completions/$name/$name.completion.sh
 }
+
 # Add all defined completions to fpath. This must be done
 # before running compinit.
 for completion in ${completions[@]}; do
@@ -68,28 +55,8 @@ for completion in ${completions[@]}; do
   fi
 done
 
-is_alias() {
-  local base_dir=$1
-  local name=$2
-  test -f $base_dir/aliases/$name/$name.aliases.sh
-}
-# Add all defined completions to fpath. This must be done
-# before running compinit.
-for alias in ${aliases[@]}; do
-  if is_alias $OSH_CUSTOM $alias; then
-    fpath=($OSH_CUSTOM/aliases/$alias $fpath)
-  elif is_alias $OSH $alias; then
-    fpath=($OSH/aliases/$alias $fpath)
-  fi
-done
-
-# Figure out the SHORT hostname
-if [[ "$OSTYPE" = darwin* ]]; then
-  # macOS's $HOST changes with dhcp, etc. Use ComputerName if possible.
-  SHORT_HOST=$(scutil --get ComputerName 2>/dev/null) || SHORT_HOST=${HOST/.*/}
-else
-  SHORT_HOST=${HOST/.*/}
-fi
+# sets the SHORT hostname
+SHORT_HOST=${HOST/.*/}
 
 # Load all of the plugins that were defined in ~/.bashrc
 for plugin in ${plugins[@]}; do
@@ -97,15 +64,6 @@ for plugin in ${plugins[@]}; do
     source $OSH_CUSTOM/plugins/$plugin/$plugin.plugin.sh
   elif [ -f $OSH/plugins/$plugin/$plugin.plugin.sh ]; then
     source $OSH/plugins/$plugin/$plugin.plugin.sh
-  fi
-done
-
-# Load all of the aliases that were defined in ~/.bashrc
-for alias in ${aliases[@]}; do
-  if [ -f $OSH_CUSTOM/aliases/$alias.aliases.sh ]; then
-    source $OSH_CUSTOM/aliases/$alias.aliases.sh
-  elif [ -f $OSH/aliases/$alias.aliases.sh ]; then
-    source $OSH/aliases/$alias.aliases.sh
   fi
 done
 
@@ -131,27 +89,17 @@ source "${OSH}/themes/colours.theme.sh"
 source "${OSH}/themes/base.theme.sh"
 
 # Load the theme
-if [ "$OSH_THEME" = "random" ]; then
-  themes=($OSH/themes/*/*theme.sh)
-  N=${#themes[@]}
-  ((N=(RANDOM%N)))
-  RANDOM_THEME=${themes[$N]}
-  source "$RANDOM_THEME"
-  echo "[oh-my-bash] Random theme '$RANDOM_THEME' loaded..."
-else
-  if [ ! "$OSH_THEME" = ""  ]; then
-    if [ -f "$OSH_CUSTOM/$OSH_THEME/$OSH_THEME.theme.sh" ]; then
-      source "$OSH_CUSTOM/$OSH_THEME/$OSH_THEME.theme.sh"
-    elif [ -f "$OSH_CUSTOM/themes/$OSH_THEME/$OSH_THEME.theme.sh" ]; then
-      source "$OSH_CUSTOM/themes/$OSH_THEME/$OSH_THEME.theme.sh"
-    else
-      source "$OSH/themes/$OSH_THEME/$OSH_THEME.theme.sh"
-    fi
+if [ ! "$OSH_THEME" = ""  ]; then
+  if [ -f "$OSH_CUSTOM/$OSH_THEME/$OSH_THEME.theme.sh" ]; then
+    source "$OSH_CUSTOM/$OSH_THEME/$OSH_THEME.theme.sh"
+  elif [ -f "$OSH_CUSTOM/themes/$OSH_THEME/$OSH_THEME.theme.sh" ]; then
+    source "$OSH_CUSTOM/themes/$OSH_THEME/$OSH_THEME.theme.sh"
+  elif [ -f "$OSH_CUSTOM/themes/$OSH_THEME/$OSH_THEME.base.sh" ]; then
+    source "$OSH_CUSTOM/themes/$OSH_THEME/$OSH_THEME.base.sh"
+  else
+    # source "$OSH/themes/$OSH_THEME/$OSH_THEME.theme.sh"
+    source "$OSH/themes/$OSH_THEME/$OSH_THEME.base.sh"
   fi
-fi
-
-if [[ $PROMPT ]]; then
-    export PS1="\["$PROMPT"\]"
 fi
 
 if ! type_exists '__git_ps1' ; then
